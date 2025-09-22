@@ -1,26 +1,32 @@
 #include "Funciones.h"
 
 void leerArchivoEncriptado(char ***array, int posicion, int mensajePista, char *direccion) {
-
-    ifstream archivo;
-    archivo.open(direccion);
+    ifstream archivo(direccion, ios::binary);  // <-- abrir en BINARIO
     if (!archivo.is_open()) {
         cerr << "No se pudo abrir el archivo" << endl;
+        return;
     }
-    int capacidad=20,control=0;
-    char *mensajeTemporal= new char[capacidad];
+
+    int capacidad = 20, control = 0;
+    char *mensajeTemporal = new char[capacidad];
     char c;
+
     while (archivo.get(c)) {
-        if(c==' ') continue;
-        if(control==capacidad){
-            redimensionarArreglo(mensajeTemporal,capacidad);
+        if (control == capacidad) {
+            redimensionarArreglo(mensajeTemporal, capacidad);
         }
-        mensajeTemporal[control]=c;
-        control+=1;
+        mensajeTemporal[control] = c;
+        control++;
+
+        // Imprimir en HEXA para debug (no en texto)
+        printf("%02X ", (unsigned char)c);
     }
+    cout << endl;
+
     archivo.close();
-    revisarEspacios(mensajeTemporal,control);
-    array[posicion][mensajePista]=mensajeTemporal;
+    cout << "Bytes leídos: " << control << endl;
+
+    array[posicion][mensajePista] = mensajeTemporal;
 }
 
 char ***crearArreglo(int numMensajes){
