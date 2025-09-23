@@ -50,22 +50,3 @@ void redimensionarArreglo(char *&arreglo, int &tamano){
     tamano+=20;
 }
 
-void revisarEspacios(char *&arreglo, int &tamanoReal){
-    char* nuevoArray = new char[tamanoReal+1];
-    for(int i=0;i<tamanoReal;i++){
-        nuevoArray[i]=arreglo[i];
-    }
-    nuevoArray[tamanoReal]='\0';
-    delete[] arreglo;
-    arreglo=nuevoArray;
-}
-
-
-
-
-
-
-
-
-
-

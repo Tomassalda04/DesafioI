@@ -9,5 +9,5 @@ using namespace std;
 void leerArchivoEncriptado(char ***array, int posicion, int mensajePista, char *direccion);
 char ***crearArreglo(int numMensajes);
 void redimensionarArreglo(char *&arreglo, int &tamano);
-void revisarEspacios(char *&arreglo, int &tamanoReal);
+void clavesRotaciones(char ***array);
 #endif
