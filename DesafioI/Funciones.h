@@ -10,4 +10,5 @@ void leerArchivoEncriptado(char ***array, int posicion, int mensajePista, char *
 char ***crearArreglo(int numMensajes);
 void redimensionarArreglo(char *&arreglo, int &tamano);
 void clavesRotaciones(char ***array);
+void imprimirArreglos(char ***array, int cantMensajes);
 #endif

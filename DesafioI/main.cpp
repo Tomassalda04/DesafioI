@@ -14,6 +14,7 @@ int main() {
         cin >> direccion;
         leerArchivoEncriptado(arregloInfoEncriptado,i,2,direccion);
     }
+    imprimirArreglos(arregloInfoEncriptado, cantMensajes);
 
     system("pause");
     return 0;

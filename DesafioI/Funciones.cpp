@@ -50,3 +50,27 @@ void redimensionarArreglo(char *&arreglo, int &tamano){
     tamano+=20;
 }
 
+void imprimirArreglos(char ***array, int cantMensajes) {
+    int control=0;
+    for (int i = 0; i < cantMensajes; i++) {
+        cout << "=== Mensaje " << i + 1 << " ===" << endl;
+
+        if (array[i][0] != nullptr) {
+            cout << "Archivo encriptado: " << endl;
+            cout << array[i][0] << endl;  // imprimirá como texto (si es binario puede salir raro)
+        } else {
+            cout << "Archivo encriptado vacío." << endl;
+        }
+
+        if (array[i][2] != nullptr) {
+            cout << "Archivo pista: " << endl;
+            cout << array[i][2] << endl;
+        } else {
+            cout << "Archivo pista vacío." << endl;
+        }
+
+        cout << "=========================" << endl;
+        control=i;
+    }
+    cout<<endl<<"Control: "<<control<<endl;
+}
