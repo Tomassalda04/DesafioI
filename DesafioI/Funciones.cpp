@@ -1,6 +1,6 @@
 #include "Funciones.h"
 
-void leerArchivoEncriptado(char ***array, int posicion, int mensajePista, char *direccion) {
+void leerArchivoEncriptado(unsigned char ***array, int posicion, int mensajePista, char *direccion) {
 
     ifstream archivo;
     archivo.open(direccion);
@@ -8,7 +8,7 @@ void leerArchivoEncriptado(char ***array, int posicion, int mensajePista, char *
         cerr << "No se pudo abrir el archivo" << endl;
     }
     int capacidad=20,control=0;
-    char *mensajeTemporal= new char[capacidad];
+    unsigned char *mensajeTemporal= new unsigned char[capacidad];
     char c;
     while (archivo.get(c)) {
         if(c==' ') continue;
@@ -23,10 +23,10 @@ void leerArchivoEncriptado(char ***array, int posicion, int mensajePista, char *
     array[posicion][mensajePista]=mensajeTemporal;
 }
 
-char ***crearArreglo(int numMensajes){
-    char*** arregloInfo = new char**[numMensajes];
+unsigned char ***crearArreglo(int numMensajes){
+    unsigned char*** arregloInfo = new unsigned char**[numMensajes];
     for (int i = 0; i < numMensajes; i++) {
-        arregloInfo[i] = new char*[3];
+        arregloInfo[i] = new unsigned char*[3];
         arregloInfo[i][0] = nullptr; // mensaje encriptado
         arregloInfo[i][1] = nullptr; // copia
         arregloInfo[i][2] = nullptr; // pista
@@ -34,8 +34,8 @@ char ***crearArreglo(int numMensajes){
     return arregloInfo;
 }
 
-void redimensionarArreglo(char *&arreglo, int &tamano){
-    char* nuevoArray = new char[tamano + 20];
+void redimensionarArreglo(unsigned char *&arreglo, int &tamano){
+    unsigned char* nuevoArray = new unsigned char[tamano + 20];
     for(int i=0;i<tamano;i++){
         nuevoArray[i]=arreglo[i];
     }
@@ -44,8 +44,8 @@ void redimensionarArreglo(char *&arreglo, int &tamano){
     tamano+=20;
 }
 
-void revisarEspacios(char *&arreglo, int &tamanoReal){
-    char* nuevoArray = new char[tamanoReal+1];
+void revisarEspacios(unsigned char *&arreglo, int &tamanoReal){
+    unsigned char* nuevoArray = new unsigned char[tamanoReal+1];
     for(int i=0;i<tamanoReal;i++){
         nuevoArray[i]=arreglo[i];
     }
@@ -54,7 +54,28 @@ void revisarEspacios(char *&arreglo, int &tamanoReal){
     arreglo=nuevoArray;
 }
 
+void desencriptarMensajes(unsigned char ***array, int cantMensajes){
 
+    for(unsigned int m=0;m<cantMensajes;m++){
+        if (array[m][1] == nullptr) continue;
+        unsigned char *mensajeDesencriptar=array[m][1];
+        int len = 0;
+        while (mensajeDesencriptar[len] != '\0') len++;
+
+        for(unsigned int XOR=0;XOR<255;XOR++){
+            int controlXOR=XOR;
+
+
+            for(unsigned int n=1;n<8;n++){
+
+
+                for(unsigned int d=0;d<2;d++){
+
+                }
+            }
+        }
+    }
+}
 
 
 

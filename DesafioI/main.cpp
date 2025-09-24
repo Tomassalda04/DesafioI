@@ -4,7 +4,7 @@ int main() {
     int cantMensajes = 1;
     cout << "Ingrese el numero de mensajes a desencriptar:" << endl;
     cin >> cantMensajes;
-    char*** arregloInfoEncriptado = crearArreglo(cantMensajes);
+    unsigned char*** arregloInfoEncriptado = crearArreglo(cantMensajes);
     for(int i=0;i<cantMensajes;i++){
         char direccion[260];
         cout << "Ingrese la ruta del archivo encriptado: ";
