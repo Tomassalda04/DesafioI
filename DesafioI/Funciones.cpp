@@ -1,26 +1,32 @@
 #include "Funciones.h"
 
 void leerArchivoEncriptado(unsigned char ***array, int posicion, int mensajePista, char *direccion) {
-
-    ifstream archivo;
-    archivo.open(direccion);
+    ifstream archivo(direccion, ios::binary);  // <-- abrir en BINARIO
     if (!archivo.is_open()) {
         cerr << "No se pudo abrir el archivo" << endl;
+        return;
     }
     int capacidad=20,control=0;
     unsigned char *mensajeTemporal= new unsigned char[capacidad];
+
     char c;
+
     while (archivo.get(c)) {
-        if(c==' ') continue;
-        if(control==capacidad){
-            redimensionarArreglo(mensajeTemporal,capacidad);
+        if (control == capacidad) {
+            redimensionarArreglo(mensajeTemporal, capacidad);
         }
-        mensajeTemporal[control]=c;
-        control+=1;
+        mensajeTemporal[control] = c;
+        control++;
+
+        // Imprimir en HEXA para debug (no en texto)
+        printf("%02X ", (unsigned char)c);
     }
+    cout << endl;
+
     archivo.close();
-    revisarEspacios(mensajeTemporal,control);
-    array[posicion][mensajePista]=mensajeTemporal;
+    cout << "Bytes leídos: " << control << endl;
+
+    array[posicion][mensajePista] = mensajeTemporal;
 }
 
 unsigned char ***crearArreglo(int numMensajes){
@@ -44,14 +50,30 @@ void redimensionarArreglo(unsigned char *&arreglo, int &tamano){
     tamano+=20;
 }
 
-void revisarEspacios(unsigned char *&arreglo, int &tamanoReal){
-    unsigned char* nuevoArray = new unsigned char[tamanoReal+1];
-    for(int i=0;i<tamanoReal;i++){
-        nuevoArray[i]=arreglo[i];
+
+void imprimirArreglos(unsigned char ***array, int cantMensajes) {
+    int control=0;
+    for (int i = 0; i < cantMensajes; i++) {
+        cout << "=== Mensaje " << i + 1 << " ===" << endl;
+
+        if (array[i][0] != nullptr) {
+            cout << "Archivo encriptado: " << endl;
+            cout << array[i][0] << endl;  // imprimirá como texto (si es binario puede salir raro)
+        } else {
+            cout << "Archivo encriptado vacío." << endl;
+        }
+
+        if (array[i][2] != nullptr) {
+            cout << "Archivo pista: " << endl;
+            cout << array[i][2] << endl;
+        } else {
+            cout << "Archivo pista vacío." << endl;
+        }
+
+        cout << "=========================" << endl;
+        control=i; 
     }
-    nuevoArray[tamanoReal]='\0';
-    delete[] arreglo;
-    arreglo=nuevoArray;
+    cout<<endl<<"Control: "<<control<<endl;
 }
 
 void desencriptarMensajes(unsigned char ***array, int cantMensajes){
@@ -76,11 +98,3 @@ void desencriptarMensajes(unsigned char ***array, int cantMensajes){
         }
     }
 }
-
-
-
-
-
-
-
-
