@@ -1,100 +1,198 @@
 #include "Funciones.h"
+#include <iostream>
+#include <fstream>
+using namespace std;
 
-void leerArchivoEncriptado(unsigned char ***array, int posicion, int mensajePista, char *direccion) {
-    ifstream archivo(direccion, ios::binary);  // <-- abrir en BINARIO
+/* Esta funcion lee el .txt y guarda cada caracter en un arreglo dinámico
+   el cual contiene n mensajes y cada uno tiene dos posiciones:
+   [0] = mensaje encriptado, [1] = pista */
+void leerArchivoEncriptado(unsigned char ***array, int posicion, int mensajePista, char *direccion, int ***arraylen) {
+    ifstream archivo(direccion, ios::binary);
     if (!archivo.is_open()) {
         cerr << "No se pudo abrir el archivo" << endl;
         return;
     }
-    int capacidad=20,control=0;
-    unsigned char *mensajeTemporal= new unsigned char[capacidad];
 
-    char c;
+    int capacidad = 20, control = 0;
+    unsigned char *mensajeTemporal = new unsigned char[capacidad];
 
-    while (archivo.get(c)) {
+    unsigned char c;
+    while (archivo.read((char*)&c, 1)) {
         if (control == capacidad) {
             redimensionarArreglo(mensajeTemporal, capacidad);
         }
         mensajeTemporal[control] = c;
         control++;
-
-        // Imprimir en HEXA para debug (no en texto)
-        printf("%02X ", (unsigned char)c);
     }
-    cout << endl;
-
     archivo.close();
-    cout << "Bytes leídos: " << control << endl;
 
     array[posicion][mensajePista] = mensajeTemporal;
+    arraylen[posicion][mensajePista] = new int(control);
 }
 
-unsigned char ***crearArreglo(int numMensajes){
-    unsigned char*** arregloInfo = new unsigned char**[numMensajes];
+/* Reserva memoria para el arreglo que contiene los mensajes y pistas */
+unsigned char ***crearArreglo(int numMensajes) {
+    unsigned char ***arregloInfo = new unsigned char**[numMensajes];
     for (int i = 0; i < numMensajes; i++) {
-        arregloInfo[i] = new unsigned char*[3];
+        arregloInfo[i] = new unsigned char*[2];
         arregloInfo[i][0] = nullptr; // mensaje encriptado
-        arregloInfo[i][1] = nullptr; // copia
-        arregloInfo[i][2] = nullptr; // pista
+        arregloInfo[i][1] = nullptr; // pista
     }
     return arregloInfo;
 }
 
-void redimensionarArreglo(unsigned char *&arreglo, int &tamano){
-    unsigned char* nuevoArray = new unsigned char[tamano + 20];
-    for(int i=0;i<tamano;i++){
-        nuevoArray[i]=arreglo[i];
+/* Reserva memoria para guardar la longitud de cada mensaje y pista */
+int ***crearArregloLen(int numMensajes) {
+    int ***arregloLen = new int**[numMensajes];
+    for (int i = 0; i < numMensajes; i++) {
+        arregloLen[i] = new int*[2];
+        arregloLen[i][0] = nullptr; // len mensaje
+        arregloLen[i][1] = nullptr; // len pista
     }
-    delete[] arreglo;
-    arreglo=nuevoArray;
-    tamano+=20;
+    return arregloLen;
 }
 
+/* Redimensiona el arreglo cuando se llena */
+void redimensionarArreglo(unsigned char *&arreglo, int &tamano) {
+    unsigned char *nuevoArray = new unsigned char[tamano + 20];
+    for (int i = 0; i < tamano; i++) {
+        nuevoArray[i] = arreglo[i];
+    }
+    delete[] arreglo;
+    arreglo = nuevoArray;
+    tamano += 20;
+}
 
+/* Imprime los mensajes y pistas */
 void imprimirArreglos(unsigned char ***array, int cantMensajes) {
-    int control=0;
     for (int i = 0; i < cantMensajes; i++) {
         cout << "=== Mensaje " << i + 1 << " ===" << endl;
 
         if (array[i][0] != nullptr) {
             cout << "Archivo encriptado: " << endl;
-            cout << array[i][0] << endl;  // imprimirá como texto (si es binario puede salir raro)
+            cout << array[i][0] << endl;
         } else {
             cout << "Archivo encriptado vacío." << endl;
         }
 
-        if (array[i][2] != nullptr) {
+        if (array[i][1] != nullptr) {
             cout << "Archivo pista: " << endl;
-            cout << array[i][2] << endl;
+            cout << array[i][1] << endl;
         } else {
             cout << "Archivo pista vacío." << endl;
         }
-
         cout << "=========================" << endl;
-        control=i; 
     }
-    cout<<endl<<"Control: "<<control<<endl;
 }
 
-void desencriptarMensajes(unsigned char ***array, int cantMensajes){
+/* Imprime las longitudes de mensajes y pistas */
+void imprimirArregloLen(int ***array, int cantMensajes) {
+    for (int i = 0; i < cantMensajes; i++) {
+        if (array[i][0] != nullptr)
+            cout << "Len Mensaje Encriptado " << i + 1 << ": " << *array[i][0] << endl;
+        if (array[i][1] != nullptr)
+            cout << "Len Pista " << i + 1 << ": " << *array[i][1] << endl;
+    }
+}
 
-    for(unsigned int m=0;m<cantMensajes;m++){
-        if (array[m][1] == nullptr) continue;
-        unsigned char *mensajeDesencriptar=array[m][1];
-        int len = 0;
-        while (mensajeDesencriptar[len] != '\0') len++;
+/* Desencripta los mensajes aplicando XOR + rotación + descompresión */
+void desencriptarMensajes(unsigned char ***array, int cantMensajes, int ***arrayLen) {
+    for (int m = 0; m < cantMensajes; m++) {
+        if (array[m][0] == nullptr) continue;
 
-        for(unsigned int XOR=0;XOR<255;XOR++){
-            int controlXOR=XOR;
+        int longitudMensaje = *arrayLen[m][0];
+        int longitudPista   = *arrayLen[m][1];
 
-
-            for(unsigned int n=1;n<8;n++){
-
-
-                for(unsigned int d=0;d<2;d++){
-
-                }
+        for (int K = 0; K < 256; K++) {
+            unsigned char *copiaXOR = new unsigned char[longitudMensaje];
+            for (int i = 0; i < longitudMensaje; i++) {
+                copiaXOR[i] = array[m][0][i] ^ (unsigned char)K;
             }
+
+            for (int n = 1; n < 8; n++) {
+                unsigned char *copiaRotacion = new unsigned char[longitudMensaje];
+                for (int i = 0; i < longitudMensaje; i++) {
+                    unsigned char b = copiaXOR[i];
+                    unsigned char rot = (unsigned char)((b >> n) | (b << (8 - n)));
+                    copiaRotacion[i] = rot;
+                }
+                int desLen = 0;
+                unsigned char *des = descompresionRLE(copiaRotacion, longitudMensaje, desLen);
+                delete[] des;
+                delete[] copiaRotacion;
+            }
+            delete[] copiaXOR;
         }
     }
 }
+
+/* Descompresión RLE */
+unsigned char* descompresionRLE(unsigned char *array, int lenMensaje, int &LenDescomprimido) {
+    int i = 0;
+    int capacity = 256;
+    unsigned char *out = new unsigned char[capacity];
+    LenDescomprimido = 0;
+
+    while (i < lenMensaje) {
+        int count = 0;
+
+        if (i + 1 < lenMensaje && array[i] == 0x00) {
+            count = array[i + 1];
+            i += 2;
+        }
+        else if (array[i] >= '0' && array[i] <= '9') {
+            while (i < lenMensaje && array[i] >= '0' && array[i] <= '9') {
+                count = count * 10 + (array[i] - '0');
+                i++;
+            }
+        }
+        else {
+            count = 1;
+        }
+
+        if (i >= lenMensaje) break;
+
+        unsigned char sym = array[i++];
+
+        if (LenDescomprimido + count >= capacity) {
+            int newCap = capacity;
+            while (LenDescomprimido + count >= newCap) newCap *= 2;
+            unsigned char *tmp = new unsigned char[newCap];
+            for (int k = 0; k < LenDescomprimido; k++) tmp[k] = out[k];
+            delete[] out;
+            out = tmp;
+            capacity = newCap;
+        }
+        for (int k = 0; k < count; k++) {
+            out[LenDescomprimido++] = sym;
+        }
+    }
+
+    unsigned char *result = new unsigned char[LenDescomprimido + 1];
+    for (int k = 0; k < LenDescomprimido; k++) result[k] = out[k];
+    result[LenDescomprimido] = '\0';
+    delete[] out;
+
+    return result;
+}
+
+/* Libera toda la memoria reservada */
+void liberarMemoria(unsigned char ***array, int ***arrayLen, int cantMensajes) {
+    for (int i = 0; i < cantMensajes; i++) {
+        for (int j = 0; j < 2; j++) {
+            if (array[i][j] != nullptr) {
+                delete[] array[i][j];
+                array[i][j] = nullptr;
+            }
+            if (arrayLen[i][j] != nullptr) {
+                delete arrayLen[i][j];
+                arrayLen[i][j] = nullptr;
+            }
+        }
+        delete[] array[i];
+        delete[] arrayLen[i];
+    }
+    delete[] array;
+    delete[] arrayLen;
+}
+
