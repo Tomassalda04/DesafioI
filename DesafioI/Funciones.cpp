@@ -129,49 +129,49 @@ void desencriptarMensajes(unsigned char ***array, int cantMensajes, int ***array
 /* Descompresión RLE */
 unsigned char* descompresionRLE(unsigned char *array, int lenMensaje, int &LenDescomprimido) {
     int i = 0;
-    int capacity = 256;
-    unsigned char *out = new unsigned char[capacity];
+    int capacidad = 256;
+    unsigned char *mensDescomprimido = new unsigned char[capacidad];
     LenDescomprimido = 0;
 
     while (i < lenMensaje) {
-        int count = 0;
+        int cont = 0;
 
         if (i + 1 < lenMensaje && array[i] == 0x00) {
-            count = array[i + 1];
+            cont = array[i + 1];
             i += 2;
         }
         else if (array[i] >= '0' && array[i] <= '9') {
             while (i < lenMensaje && array[i] >= '0' && array[i] <= '9') {
-                count = count * 10 + (array[i] - '0');
+                cont = cont * 10 + (array[i] - '0');
                 i++;
             }
         }
         else {
-            count = 1;
+            cont = 1;
         }
 
         if (i >= lenMensaje) break;
 
         unsigned char sym = array[i++];
 
-        if (LenDescomprimido + count >= capacity) {
-            int newCap = capacity;
-            while (LenDescomprimido + count >= newCap) newCap *= 2;
-            unsigned char *tmp = new unsigned char[newCap];
-            for (int k = 0; k < LenDescomprimido; k++) tmp[k] = out[k];
-            delete[] out;
-            out = tmp;
-            capacity = newCap;
+        if (LenDescomprimido + cont >= capacidad) {
+            int newCap = capacidad;
+            while (LenDescomprimido + cont >= newCap) newCap *= 2;
+            unsigned char *mensDescTemp = new unsigned char[newCap];
+            for (int k = 0; k < LenDescomprimido; k++) mensDescTemp[k] = mensDescomprimido[k];
+            delete[] mensDescomprimido;
+            mensDescomprimido = mensDescTemp;
+            capacidad = newCap;
         }
-        for (int k = 0; k < count; k++) {
-            out[LenDescomprimido++] = sym;
+        for (int k = 0; k < cont; k++) {
+            mensDescomprimido[LenDescomprimido++] = sym;
         }
     }
 
     unsigned char *result = new unsigned char[LenDescomprimido + 1];
-    for (int k = 0; k < LenDescomprimido; k++) result[k] = out[k];
+    for (int k = 0; k < LenDescomprimido; k++) result[k] = mensDescomprimido[k];
     result[LenDescomprimido] = '\0';
-    delete[] out;
+    delete[] mensDescomprimido;
 
     return result;
 }
