@@ -152,7 +152,7 @@ unsigned char* descompresionRLE(unsigned char *array, int lenMensaje, int &LenDe
 
         if (i >= lenMensaje) break;
 
-        unsigned char sym = array[i++];
+        unsigned char caracter = array[i++];
 
         if (LenDescomprimido + cont >= capacidad) {
             int newCap = capacidad;
@@ -164,7 +164,7 @@ unsigned char* descompresionRLE(unsigned char *array, int lenMensaje, int &LenDe
             capacidad = newCap;
         }
         for (int k = 0; k < cont; k++) {
-            mensDescomprimido[LenDescomprimido++] = sym;
+            mensDescomprimido[LenDescomprimido++] = caracter;
         }
     }
 
