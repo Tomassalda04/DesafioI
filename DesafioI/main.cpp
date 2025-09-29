@@ -15,8 +15,6 @@ int main() {
         cin >> direccion;
         leerArchivoEncriptado(arregloInfoEncriptado,i,1,direccion,arregloLongitudes);
     }
-    //imprimirArreglos(arregloInfoEncriptado, cantMensajes);
-    //imprimirArregloLen(arregloLongitudes,cantMensajes);
     desencriptarMensajes(arregloInfoEncriptado, cantMensajes, arregloLongitudes);
     liberarMemoria(arregloInfoEncriptado,arregloLongitudes, cantMensajes);
     system("pause");
