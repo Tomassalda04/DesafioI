@@ -149,112 +149,121 @@ void desencriptarMensajes(unsigned char ***array, int cantMensajes, int ***array
 }
 
 unsigned char* descompresionRLE(unsigned char *array, int lenMensaje, int &LenDescomprimido) {
-    int i = 0;
-    int capacidad = 256;
-    unsigned char *mensDescomprimido = new unsigned char[capacidad];
+    int posicion = 0;
+    int capacidadMensaje = 256;
+    unsigned char *mensajeDesencriptado = new unsigned char[capacidadMensaje];
     LenDescomprimido = 0;
-    while (i < lenMensaje) {
-        int cont = 0;
-        if (i + 1 < lenMensaje && array[i] == 0x00) {
-            cont = array[i + 1];
-            i += 2;
+    while (posicion < lenMensaje) {
+        int repeticiones = 0;
+        if (posicion + 1 < lenMensaje && array[posicion] == 0x00) {
+            repeticiones = array[posicion + 1];
+            posicion += 2;
         }
-        else if (array[i] >= '0' && array[i] <= '9') {
-            while (i < lenMensaje && array[i] >= '0' && array[i] <= '9') {
-                cont = cont * 10 + (array[i] - '0');
-                i++;
+        else if (array[posicion] >= '0' && array[posicion] <= '9') {
+            while (posicion < lenMensaje && array[posicion] >= '0' && array[posicion] <= '9') {
+                repeticiones = repeticiones * 10 + (array[posicion] - '0');
+                posicion++;
             }
         }
         else {
-            cont = 1;
+            repeticiones = 1;
         }
-        if (i >= lenMensaje) break;
-        unsigned char caracter = array[i++];
-        if (LenDescomprimido + cont >= capacidad) {
-            int nuevaCapacidad = capacidad;
-            while (LenDescomprimido + cont >= nuevaCapacidad) nuevaCapacidad *= 2;
-            unsigned char *mensDescTemp = new unsigned char[nuevaCapacidad];
-            for (int k = 0; k < LenDescomprimido; k++) mensDescTemp[k] = mensDescomprimido[k];
-            delete[] mensDescomprimido;
-            mensDescomprimido = mensDescTemp;
-            capacidad = nuevaCapacidad;
+        if (posicion >= lenMensaje) break;
+        unsigned char caracterActual = array[posicion++];
+        if (LenDescomprimido + repeticiones >= capacidadMensaje) {
+            int nuevaCapacidadMensaje = capacidadMensaje;
+            while (LenDescomprimido + repeticiones >= nuevaCapacidadMensaje){
+                nuevaCapacidadMensaje *= 2;
+            }
+            unsigned char *mensajeTemporal = new unsigned char[nuevaCapacidadMensaje];
+            for (int k = 0; k < LenDescomprimido; k++){
+                mensajeTemporal[k] = mensajeDesencriptado[k];
+            }
+            delete[] mensajeDesencriptado;
+            mensajeDesencriptado = mensajeTemporal;
+            capacidadMensaje = nuevaCapacidadMensaje;
         }
-        for (int k = 0; k < cont; k++) {
-            mensDescomprimido[LenDescomprimido++] = caracter;
+        for (int k = 0; k < repeticiones; k++) {
+            mensajeDesencriptado[LenDescomprimido++] = caracterActual;
         }
     }
-    unsigned char *result = new unsigned char[LenDescomprimido + 1];
-    for (int k = 0; k < LenDescomprimido; k++) result[k] = mensDescomprimido[k];
-    result[LenDescomprimido] = '\0';
-    delete[] mensDescomprimido;
-    return result;
+    unsigned char *mensajeFinal = new unsigned char[LenDescomprimido + 1];
+    for (int k = 0; k < LenDescomprimido; k++){
+        mensajeFinal[k] = mensajeDesencriptado[k];
+    }
+    mensajeFinal[LenDescomprimido] = '\0';
+    delete[] mensajeDesencriptado;
+    return mensajeFinal;
 }
 
 unsigned char* descompresionLZ78(unsigned char *array, int lenMensaje, int &LenDescomprimido) {
     int capacidadDiccionario = 256;
     unsigned char **diccionario = new unsigned char*[capacidadDiccionario];
-    int tamanoDiccionario = 1;   // posición 0 reservada
+    int tamanoDiccionario = 1;
     diccionario[0] = nullptr;
-    int capacidad = 512;
-    unsigned char *resultado = new unsigned char[capacidad];
+    int capacidadResultado = 512;
+    unsigned char *resultado = new unsigned char[capacidadResultado];
     LenDescomprimido = 0;
-    int i = 0;
-    while (i + 2 < lenMensaje) {
-        int indice = (array[i] << 8) | array[i + 1];
-        unsigned char c = array[i + 2];
-        i += 3;
+    int posicion = 0;
+    while (posicion + 2 < lenMensaje) {
+        int indice = (array[posicion] << 8) | array[posicion + 1];
+        unsigned char caracter = array[posicion + 2];
+        posicion += 3;
         unsigned char *prefijo = nullptr;
-        int lenPrefijo = 0;
+        int longitudPrefijo = 0;
         if (indice > 0 && indice < tamanoDiccionario) {
             unsigned char *entrada = diccionario[indice];
-            while (entrada[lenPrefijo] != '\0') lenPrefijo++;
+            while (entrada[longitudPrefijo] != '\0') {
+                longitudPrefijo++;
+            }
             prefijo = entrada;
         }
-        int nuevaLongitud = lenPrefijo + 1;
+        int nuevaLongitud = longitudPrefijo + 1;
         unsigned char *nuevaCadena = new unsigned char[nuevaLongitud + 1];
-        for (int k = 0; k < lenPrefijo; k++) nuevaCadena[k] = prefijo[k];
-        nuevaCadena[lenPrefijo] = c;
+        for (int k = 0; k < longitudPrefijo; k++) {
+            nuevaCadena[k] = prefijo[k];
+        }
+        nuevaCadena[longitudPrefijo] = caracter;
         nuevaCadena[nuevaLongitud] = '\0';
         if (tamanoDiccionario >= capacidadDiccionario) {
-            int nuevaCap = capacidadDiccionario * 2;
-            unsigned char **tmp = new unsigned char*[nuevaCap];
-            for (int k = 0; k < capacidadDiccionario; k++){
-                tmp[k] = diccionario[k];
+            int nuevaCapacidad = capacidadDiccionario * 2;
+            unsigned char **diccionarioTemporal = new unsigned char*[nuevaCapacidad];
+            for (int k = 0; k < capacidadDiccionario; k++) {
+                diccionarioTemporal[k] = diccionario[k];
             }
             delete[] diccionario;
-            diccionario = tmp;
-            capacidadDiccionario = nuevaCap;
+            diccionario = diccionarioTemporal;
+            capacidadDiccionario = nuevaCapacidad;
         }
         diccionario[tamanoDiccionario++] = nuevaCadena;
-        if (LenDescomprimido + nuevaLongitud >= capacidad) {
-            int nuevaCap = capacidad * 2;
-            while (LenDescomprimido + nuevaLongitud >= nuevaCap){
-                nuevaCap *= 2;
+        if (LenDescomprimido + nuevaLongitud >= capacidadResultado) {
+            int nuevaCapacidad = capacidadResultado * 2;
+            while (LenDescomprimido + nuevaLongitud >= nuevaCapacidad) {
+                nuevaCapacidad *= 2;
             }
-            unsigned char *tmpRes = new unsigned char[nuevaCap];
-            for (int k = 0; k < LenDescomprimido; k++){
-                tmpRes[k] = resultado[k];
+            unsigned char *resultadoTemporal = new unsigned char[nuevaCapacidad];
+            for (int k = 0; k < LenDescomprimido; k++) {
+                resultadoTemporal[k] = resultado[k];
             }
             delete[] resultado;
-            resultado = tmpRes;
-            capacidad = nuevaCap;
+            resultado = resultadoTemporal;
+            capacidadResultado = nuevaCapacidad;
         }
         for (int k = 0; k < nuevaLongitud; k++) {
             resultado[LenDescomprimido++] = nuevaCadena[k];
         }
     }
-    unsigned char *finalRes = new unsigned char[LenDescomprimido + 1];
-    for (int k = 0; k < LenDescomprimido; k++){
-        finalRes[k] = resultado[k];
+    unsigned char *mensajeFinal = new unsigned char[LenDescomprimido + 1];
+    for (int k = 0; k < LenDescomprimido; k++) {
+        mensajeFinal[k] = resultado[k];
     }
-    finalRes[LenDescomprimido] = '\0';
-
+    mensajeFinal[LenDescomprimido] = '\0';
     delete[] resultado;
     for (int k = 1; k < tamanoDiccionario; k++) {
         delete[] diccionario[k];
     }
     delete[] diccionario;
-    return finalRes;
+    return mensajeFinal;
 }
 
 
